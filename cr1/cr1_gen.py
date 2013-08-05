@@ -43,6 +43,8 @@ def find_min(text_time):
 	minute = int(text_time[3:5])
 	if int(text_time[-2:]) > 29:
 		minute += 1
+
+	#print hour * 60 + minute
 	return hour * 60 + minute
 
 def create(show_total, days):
@@ -57,7 +59,7 @@ def create(show_total, days):
 		while playtime <= (playtime_limit - 50):
 			show = select_random(show_total)
 			avg = find_avg()
-			if (playtime + find_min(show[5]) < playtime_limit and show[1] not in selected:
+			if playtime + find_min(show[5]) < playtime_limit and show[1] not in selected:
 				if len(day_list) == 0 or float(sum(per_counts))/len(per_counts) < avg:
 					day_list.append(show)
 					per_counts.append(show[7])
@@ -110,7 +112,7 @@ def add_datetime(playlist):
 	update_date(end) #update last scheduled date
 
 	start_datetime = datetime.datetime(start.year, start.month, start.day, 11,0,0)
-	output_time_0 = start_datetime
+	
 	file_date = "{0}-{1}-{2}".format(start_datetime.date().month,
 								start_datetime.date().day, start_datetime.date().year)
 	#start_time = start_datetime.time()
@@ -120,6 +122,7 @@ def add_datetime(playlist):
 		for i in range(len(playlist[day])):
 			for each in range(len(playlist[day][i])):
 				"""start show time adjustment"""
+				output_time_0 = start_datetime
 				minute_diff = output_time_0.time().minute % 5
 				if minute_diff == 0:
 					pass
@@ -133,10 +136,13 @@ def add_datetime(playlist):
 				show_date = "{0}/{1}/{2}".format(output_time_0.date().month,
 								output_time_0.date().day, output_time_0.date().year)
 				start_datetime += datetime.timedelta(hours=int(playlist[day][i][each][5][:2]), 
-													minutes=int(playlist[day][i][each][5][3:5])) # no seconds
-
+													minutes=int(playlist[day][i][each][5][3:5]),
+													seconds=int(playlist[day][i][each][5][-2:]))
+				print "start datetime: {0}".format(start_datetime)
 				"""add output_time_1 to calculate actual runtime difference based on round-off"""
 				output_time_1 = start_datetime
+				#print output_time_1
+				#print output_time_0
 				seconds = (output_time_1 - output_time_0).seconds #difference in seconds
 				minutes = seconds // 60
 				if minutes % 5 == 0:
@@ -148,7 +154,8 @@ def add_datetime(playlist):
 				
 				show_runtime = minutes
 				"""end"""
-				output_time_0 = start_datetime
+				
+				print "output_0: {0}".format(output_time_0)
 				channel = 'VENUS'
 				event_type = 'MV'
 				show_num = '0890' + playlist[day][i][each][1][-4:]
@@ -172,9 +179,21 @@ def add_datetime(playlist):
 								dolby, air_date])
 
 		break_1 = datetime.datetime(start_datetime.date().year, start_datetime.date().month,
-							start_datetime.date().day, 9,0,0,0)
+							start_datetime.date().day, 9,0,0)
 		#first break sessino ends at 9:00:00 AM
 		#break_min = (break_1 - start_datetime).seconds//60
+
+		if start_datetime.time().minute % 5 == 0:
+			start_datetime = datetime.datetime(start_datetime.date().year,
+											start_datetime.date().month,
+											start_datetime.date().day,
+											start_datetime.time().hour,
+											start_datetime.time().minute,
+											0)
+		elif start_datetime.time().minute % 5 >= 3:
+			start_datetime += datetime.timedelta(minutes=5- start_datetime.time().minute % 5)
+		elif start_datetime.time().minute % 5 < 3:
+			start_datetime -= datetime.timedelta(minutes=start_datetime.time().minute % 5)
 
 		breaks = {0: (break_1 - start_datetime).seconds//60, 1: 120}
 		for i in range(2):
