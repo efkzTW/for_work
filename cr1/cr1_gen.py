@@ -37,6 +37,14 @@ def update_date(end_date):
 		c = connection.cursor()
 		c.execute("update others set last_date = '{0}'".format(end_date))
 
+def find_min(text_time):
+	#find minute from time string hh:mm:ss
+	hour = int(text_time[:2])
+	minute = int(text_time[3:5])
+	if int(text_time[-2:]) > 29:
+		minute += 1
+	return hour * 60 + minute
+
 def create(show_total, days):
 	selected = []
 	complete_list = []
@@ -49,18 +57,18 @@ def create(show_total, days):
 		while playtime <= (playtime_limit - 50):
 			show = select_random(show_total)
 			avg = find_avg()
-			if (playtime + show[6]) < playtime_limit and show[1] not in selected:
+			if (playtime + find_min(show[5]) < playtime_limit and show[1] not in selected:
 				if len(day_list) == 0 or float(sum(per_counts))/len(per_counts) < avg:
 					day_list.append(show)
 					per_counts.append(show[7])
 					selected.append(show[1])
-					playtime += show[6]
+					playtime += find_min(show[5])
 				else:
 					if show[7] <= avg:
 						day_list.append(show);
 						per_counts.append(show[7])
 						selected.append(show[1])
-						playtime += show[6]
+						playtime += find_min(show[5])
 
 		for show in day_list:
 			update_count(show[0])
