@@ -133,29 +133,46 @@ def add_datetime(playlist):
 				"""end here"""
 				show_time = "{0}:{1}".format(check_len(output_time_0.time().hour),
 												check_len(output_time_0.time().minute))
+				full_show_time = "{0}:{1}:{2}".format(check_len(start_datetime.time().hour),
+													check_len(start_datetime.time().minute),
+													check_len(start_datetime.time().second))
 				show_date = "{0}/{1}/{2}".format(output_time_0.date().month,
 								output_time_0.date().day, output_time_0.date().year)
 				start_datetime += datetime.timedelta(hours=int(playlist[day][i][each][5][:2]), 
 													minutes=int(playlist[day][i][each][5][3:5]),
 													seconds=int(playlist[day][i][each][5][-2:]))
-				print "start datetime: {0}".format(start_datetime)
+				#print "start datetime: {0}".format(start_datetime)
 				"""add output_time_1 to calculate actual runtime difference based on round-off"""
 				output_time_1 = start_datetime
-				#print output_time_1
-				#print output_time_0
-				seconds = (output_time_1 - output_time_0).seconds #difference in seconds
-				minutes = seconds // 60
-				if minutes % 5 == 0:
+				minute_diff = output_time_1.time().minute % 5
+				if minute_diff == 0:
 					pass
-				elif minutes % 5 < 3:
-					minutes -= minutes % 5
-				elif minutes % 5 >= 3:
-					minutes += 5 - minutes % 5
-				
-				show_runtime = minutes
+				elif minute_diff >= 3:
+				    output_time_1 += datetime.timedelta(minutes=(5-minute_diff))
+				elif minute_diff < 3:
+					output_time_1 -= datetime.timedelta(minutes=minute_diff)
+				#print "time 0: {0}".format(output_time_0)
+				#print "time 1: {0}".format(output_time_1)
+				#print "difference: {0}".format((output_time_1 - output_time_0).seconds//60)
+				#seconds = (output_time_1 - output_time_0).seconds #difference in seconds
+				#minutes = seconds // 60
+				#if minutes % 5 == 0:
+				#	pass
+				#elif minutes % 5 < 3:
+				#	minutes -= minutes % 5
+				#elif minutes % 5 >= 3:
+				#	minutes += 5 - minutes % 5
+				minute_delta = (output_time_1 - output_time_0).seconds//60
+				if minute_delta % 5 == 0:
+					pass
+				elif minute_delta % 5 >= 3:
+					minute_delta += 5 - minute_delta % 5
+				elif minute_delta % 5 < 3:
+					minute_delta -= minute_delta % 5
+				show_runtime = minute_delta
 				"""end"""
 				
-				print "output_0: {0}".format(output_time_0)
+				#print "output_0: {0}".format(output_time_0)
 				channel = 'VENUS'
 				event_type = 'MV'
 				show_num = '0890' + playlist[day][i][each][1][-4:]
@@ -176,7 +193,7 @@ def add_datetime(playlist):
 				complete_schedule.append([show_date, show_time, show_runtime, channel, event_type,
 								show_num, ep_num, show_title, ep_title, show_desc, show_type,
 								sub_type, rating, rating_1, rating_2, rating_3, rating_4,
-								dolby, air_date])
+								dolby, air_date, full_show_time])
 
 		#adjust the time to be right on 5 minute interval with 0 seconds
 		start_datetime = datetime.datetime(start_datetime.date().year,
@@ -199,11 +216,13 @@ def add_datetime(playlist):
 
 		breaks = {0: (break_1 - start_datetime).seconds//60, 1: 120}
 		for i in range(2):
-
+			full_show_time = "{0}:{1}:{2}".format(check_len(start_datetime.time().hour),
+													check_len(start_datetime.time().minute),
+													check_len(start_datetime.time().second))
 			show_time = "{0}:{1}".format(check_len(start_datetime.time().hour), check_len(start_datetime.time().minute))
 			complete_schedule.append([show_date,show_time,breaks[i], channel, event_type, '08900000',
 								ep_num, slate[2], slate[4], slate[3], show_type, sub_type, rating,
-								rating_1, rating_2, rating_3, rating_4, dolby, air_date])
+								rating_1, rating_2, rating_3, rating_4, dolby, air_date, full_show_time])
 			start_datetime += datetime.timedelta(minutes=breaks[i])
 
 		day += 1
@@ -229,7 +248,7 @@ def json_output(schedule, file_date):
 
 	with io.open(os.path.join(script_dir, rel_path2), 'w', encoding='utf-8') as f:
 		#output to text file for playout system
-		f.write("\t".join([unicode("No."), unicode("Date"), unicode("Start"), unicode('Runtime'),
+		f.write("\t".join([unicode("No."), unicode("Date"), unicode("Start"), unicode("Full Start"), unicode('Runtime'),
 							unicode("File"), unicode("EPG"), unicode("Movie"),unicode("Actress"),'\n']))
 		showlist = ['0000']
 		num = ''
@@ -257,7 +276,7 @@ def json_output(schedule, file_date):
 				num += 1
 				total_runtime += datetime.timedelta(hours=int(ft[:2]), minutes = int(ft[3:5]), seconds = int(ft[-2:]))
 
-			info = "\t".join([unicode(num) + unicode("."), schedule[i][0], schedule[i][1], search_time(show_num), unicode("Venus-") + schedule[i][5][-4:], 
+			info = "\t".join([unicode(num) + unicode("."), schedule[i][0], schedule[i][1], schedule[i][-1], search_time(show_num), unicode("Venus-") + schedule[i][5][-4:], 
 							schedule[i][7], schedule[i][9], schedule[i][8], summary, '\n'])
 			f.write(info)
 
