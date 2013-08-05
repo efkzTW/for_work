@@ -110,6 +110,7 @@ def add_datetime(playlist):
 	update_date(end) #update last scheduled date
 
 	start_datetime = datetime.datetime(start.year, start.month, start.day, 11,0,0)
+	output_time_0 = start_datetime
 	file_date = "{0}-{1}-{2}".format(start_datetime.date().month,
 								start_datetime.date().day, start_datetime.date().year)
 	#start_time = start_datetime.time()
@@ -118,11 +119,36 @@ def add_datetime(playlist):
 	while day < len(playlist):
 		for i in range(len(playlist[day])):
 			for each in range(len(playlist[day][i])):
-				show_date = "{0}/{1}/{2}".format(start_datetime.date().month,
-								start_datetime.date().day, start_datetime.date().year)
-				show_time = "{0}:{1}".format(check_len(start_datetime.time().hour), check_len(start_datetime.time().minute))
-				start_datetime += datetime.timedelta(minutes=playlist[day][i][each][6])
-				show_runtime = playlist[day][i][each][6]
+				"""start show time adjustment"""
+				minute_diff = output_time_0.time().minute % 5
+				if minute_diff == 0:
+					pass
+				elif minute_diff >= 3:
+				    output_time_0 += datetime.timedelta(minutes=(5-minute_diff))
+				elif minute_diff < 3:
+					output_time_0 -= datetime.timedelta(minutes=minute_diff)
+				"""end here"""
+				show_time = "{0}:{1}".format(check_len(output_time_0.time().hour),
+												check_len(output_time_0.time().minute))
+				show_date = "{0}/{1}/{2}".format(output_time_0.date().month,
+								output_time_0.date().day, output_time_0.date().year)
+				start_datetime += datetime.timedelta(hours=int(playlist[day][i][each][5][:2]), 
+													minutes=int(playlist[day][i][each][5][3:5])) # no seconds
+
+				"""add output_time_1 to calculate actual runtime difference based on round-off"""
+				output_time_1 = start_datetime
+				seconds = (output_time_1 - output_time_0).seconds #difference in seconds
+				minutes = seconds // 60
+				if minutes % 5 == 0:
+					pass
+				elif minutes % 5 < 3:
+					minutes -= minutes % 5
+				elif minutes % 5 >= 3:
+					minutes += 5 - minutes % 5
+				
+				show_runtime = minutes
+				"""end"""
+				output_time_0 = start_datetime
 				channel = 'VENUS'
 				event_type = 'MV'
 				show_num = '0890' + playlist[day][i][each][1][-4:]
