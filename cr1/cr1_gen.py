@@ -62,7 +62,7 @@ def create(show_total, days):
 					day_list.append(show)
 					per_counts.append(show[7])
 					selected.append(show[1])
-					playtime += find_min(show[5])
+					playtime += find_min(show[5]) #base it on full runtime
 				else:
 					if show[7] <= avg:
 						day_list.append(show);
