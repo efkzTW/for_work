@@ -178,22 +178,24 @@ def add_datetime(playlist):
 								sub_type, rating, rating_1, rating_2, rating_3, rating_4,
 								dolby, air_date])
 
-		break_1 = datetime.datetime(start_datetime.date().year, start_datetime.date().month,
-							start_datetime.date().day, 9,0,0)
-		#first break sessino ends at 9:00:00 AM
-		#break_min = (break_1 - start_datetime).seconds//60
-
-		if start_datetime.time().minute % 5 == 0:
-			start_datetime = datetime.datetime(start_datetime.date().year,
+		#adjust the time to be right on 5 minute interval with 0 seconds
+		start_datetime = datetime.datetime(start_datetime.date().year,
 											start_datetime.date().month,
 											start_datetime.date().day,
 											start_datetime.time().hour,
 											start_datetime.time().minute,
 											0)
+		if start_datetime.time().minute % 5 == 0:
+			pass
 		elif start_datetime.time().minute % 5 >= 3:
 			start_datetime += datetime.timedelta(minutes=5- start_datetime.time().minute % 5)
 		elif start_datetime.time().minute % 5 < 3:
 			start_datetime -= datetime.timedelta(minutes=start_datetime.time().minute % 5)
+
+		break_1 = datetime.datetime(start_datetime.date().year, start_datetime.date().month,
+							start_datetime.date().day, 9,0,0)
+		#first break sessino ends at 9:00:00 AM
+		#break_min = (break_1 - start_datetime).seconds//60
 
 		breaks = {0: (break_1 - start_datetime).seconds//60, 1: 120}
 		for i in range(2):
