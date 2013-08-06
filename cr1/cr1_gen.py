@@ -238,13 +238,12 @@ def search_time(show_num):
 
 def json_output(schedule, file_date):
 	#print schedule[:3]
+
 	file_name = "{0}_{1}.json".format("VENUS", file_date)
 	txt_file = "{0}_{1}.txt".format("VENUS", file_date)
 	script_dir = os.path.dirname(__file__)
 	rel_path = "output/" + file_name
 	rel_path2 = "output/" + txt_file
-	with io.open(os.path.join(script_dir,rel_path), 'w',encoding='utf-8') as f:
-		f.write(unicode(json.dumps(schedule)))
 
 	with io.open(os.path.join(script_dir, rel_path2), 'w', encoding='utf-8') as f:
 		#output to text file for playout system
@@ -276,9 +275,13 @@ def json_output(schedule, file_date):
 				num += 1
 				total_runtime += datetime.timedelta(hours=int(ft[:2]), minutes = int(ft[3:5]), seconds = int(ft[-2:]))
 
-			info = "\t".join([unicode(num) + unicode("."), schedule[i][0], schedule[i][1], schedule[i][-1], search_time(show_num), unicode("Venus-") + schedule[i][5][-4:], 
+			info = "\t".join([unicode(num) + unicode("."), schedule[i][0], schedule[i][1], schedule[i].pop(), search_time(show_num), unicode("Venus-") + schedule[i][5][-4:], 
 							schedule[i][7], schedule[i][9], schedule[i][8], summary, '\n'])
 			f.write(info)
+
+	
+	with io.open(os.path.join(script_dir,rel_path), 'w',encoding='utf-8') as f:
+		f.write(unicode(json.dumps(schedule)))
 
 
 if __name__ == '__main__':
