@@ -3,7 +3,11 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from time import sleep
 
+'''successfully scrapped a javasript site using selenium + phantomjs webdriver, then
+	use beautifulsoup as html dom parser'''
+
 def textTime(textTime):
+	#convert show time on the website
 	pos = textTime.index(":")
 	hour, minute, ampm = int(textTime[:pos]), textTime[-4:-2], textTime[-2:]
 	adjust = 0
@@ -24,12 +28,12 @@ def load_online_data(future_days):
 		driver = webdriver.PhantomJS("phantomjs")
 		target_date = (datetime.datetime.today() + datetime.timedelta(days=d)).date()
 		textDate = "{0}/{1}/{2}".format(target_date.month, target_date.day, target_date.year)
-		print target_date, textDate
+		#print target_date, textDate
 		url_date = "{0}-{1}-{2}".format(target_date.strftime("%d"), target_date.strftime("%b"), target_date.year)
 		driver.get(url_base+url_date)
 
 		sleep(3)
-		print url_base+url_date
+		#print url_base+url_date
 		htmlText = driver.page_source.encode("utf-8")
 		#print htmlText
 		full_html = BeautifulSoup(htmlText)
@@ -75,5 +79,6 @@ def output_file(schedule):
 
 
 if __name__ == "__main__":
-	schedule = load_online_data(9)
+	days = 9 #number of days out the website seems to provide
+	schedule = load_online_data(days)
 	output_file(schedule)
