@@ -1,4 +1,4 @@
-import datetime, sys, csv, sqlite3, re
+import datetime, sys, csv, sqlite3, re, json, io, os
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from time import sleep
@@ -126,8 +126,7 @@ def dbSearchAdd(sch):
 							data.append(entry[i])
 				complete_epg_data.append(data)
 
-	print complete_epg_data
-	print len(complete_epg_data)
+	return complete_epg_data
 	#print cInfo["show_num"]
 
 def dbAdd(c, newTitle):
@@ -163,15 +162,13 @@ def dbAdd(c, newTitle):
 		
 def output_file(schedule):
 	date = (datetime.datetime.today() + datetime.timedelta(days=1)).date()
-	file_name = "{0}_{1}{2}{3}.csv".format(channel,date.strftime('%m'), date.strftime('%d'), date.year)
-	with open(file_name, 'wb') as f:
-		csvWrite = csv.writer(f)
-		for i in schedule:
-			csvWrite.writerow([i[0],i[1],i[2],i[3]])
+	file_name = "{0}_{1}{2}{3}.json".format(channel,date.strftime('%m'), date.strftime('%d'), date.year)
+	with io.open(file_name, "w", encoding="utf-8") as f:
+		f.write(unicode(json.dumps(schedule)))
 
 
 if __name__ == "__main__":
 	days = 9 #number of days out the website seems to provide
 	schedule = load_online_data(days)
-	dbSearchAdd(schedule)
-	output_file(schedule)
+	complete_sch = dbSearchAdd(schedule)
+	output_file(complete_sch)
